@@ -9,7 +9,7 @@
 		{
 			"name": "${1:loadBalancerInternal1}",
 			"type": "Microsoft.Network/loadBalancers",
-			"apiVersion": "2023-04-01",
+			"apiVersion": "2023-11-01",
 			"location": "[resourceGroup().location]",
 			"dependsOn": [
 				"[resourceId('Microsoft.Network/virtualNetworks', '${2:virtualNetwork1}')]"

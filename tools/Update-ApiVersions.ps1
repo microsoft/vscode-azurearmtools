@@ -2,7 +2,7 @@
 #
 # INSTRUCTIONS:
 #
-# 1) Update availableResourceTypesAndVersions.txt
+# 1) Update tools\resourceTypesAndVersions.txt
 #   a) Update schemas in the extension
 #   b) Open the updated extension in VS Code
 #   c) Create an empty json file and run the "arm!" snippet to create a blank template target the resource group schema
@@ -11,11 +11,12 @@
 #   f) Copy the output in the output window to availableResourceTypesAndVersions.txt, replacing the old entry (blank lines are ok)
 #   g) Save availableResourceTypesAndVersions.txt
 # 2) Update snippets
-#   a) Install az Powershell module: Install-Module -Name Az -Repository PSGallery
-#   b) From repo root, run (yes, extra period): . ./tools/Update-ApiVersions.ps1
-#   c) Run: Update-ApiVersions ./assets/resourceSnippets/ ./tools/resourceTypesAndVersions.txt
-#   d) Run: Update-ApiVersions ./test/snippets/expected/ ./tools/resourceTypesAndVersions.txt
-#   d) Run tests and create PR
+#   a) Start PowerShell
+#   b) Install az Powershell module: Install-Module -Name Az -Repository PSGallery
+#   c) From repo root, run (yes, extra period): . ./tools/Update-ApiVersions.ps1
+#   d) Run: Update-ApiVersions ./assets/resourceSnippets/ ./tools/resourceTypesAndVersions.txt
+#   e) Run: Update-ApiVersions ./test/snippets/expected/ ./tools/resourceTypesAndVersions.txt
+#   f) Run tests and create PR
 
 
 $providersCache = @{}

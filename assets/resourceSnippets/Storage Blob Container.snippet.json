@@ -9,7 +9,7 @@
         {
             "name": "${1:accountName}/default/${2:blobContainerName}",
             "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
-            "apiVersion": "2023-01-01",
+            "apiVersion": "2023-04-01",
             "dependsOn": [
                 "[resourceId('Microsoft.Storage/storageAccounts', '${1:accountName}')]"
             ],

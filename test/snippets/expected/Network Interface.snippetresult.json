@@ -3,7 +3,7 @@
 		{
 			"name": "networkInterface1",
 			"type": "Microsoft.Network/networkInterfaces",
-			"apiVersion": "2023-04-01",
+			"apiVersion": "2023-11-01",
 			"location": "[resourceGroup().location]",
 			"tags": {
 				"displayName": "networkInterface1"

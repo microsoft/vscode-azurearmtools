@@ -9,7 +9,7 @@
 		{
 			"name": "${1:appServicePlan1}",
 			"type": "Microsoft.Web/serverfarms",
-			"apiVersion": "2022-09-01",
+			"apiVersion": "2023-01-01",
 			"location": "[resourceGroup().location]",
 			"sku": {
 				"name": "F1",

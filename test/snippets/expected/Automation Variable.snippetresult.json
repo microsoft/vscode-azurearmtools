@@ -3,7 +3,7 @@
 		{
 			"name": "parent/automationVariable1",
 			"type": "Microsoft.Automation/automationAccounts/variables",
-			"apiVersion": "2022-08-08",
+			"apiVersion": "2023-11-01",
 			"dependsOn": [
 				"[resourceId('Microsoft.Automation/automationAccounts', 'automationAccount1')]"
 			],

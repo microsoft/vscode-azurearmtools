@@ -9,7 +9,7 @@
 		{
 			"name": "${1:webApp1}",
 			"type": "Microsoft.Web/sites",
-			"apiVersion": "2022-09-01",
+			"apiVersion": "2023-01-01",
 			"location": "[resourceGroup().location]",
 			"tags": {
 				"[concat('hidden-related:', resourceGroup().id, '/providers/Microsoft.Web/serverfarms/${2:appServicePlan1}')]": "Resource",

@@ -9,7 +9,7 @@
 		{
 			"name": "${1:nestedDeployment1}",
 			"type": "Microsoft.Resources/deployments",
-			"apiVersion": "2022-09-01",
+			"apiVersion": "2024-03-01",
 			"properties": {
 				"expressionEvaluationOptions": {
 					"scope": "inner"
