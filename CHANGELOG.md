@@ -2,11 +2,23 @@
 
 All notable changes to the "vscode-azurearmtools" extension will be documented in this file.
 
-## Version 0.15.12 (2023-11)
+## Version 0.15.12 (July 2024)
 
 ### Changed
 
-- Update schemas cache
+- Update apiVersions in all snippets
+- Build maintenance and security work
+
+### Added
+- Add *Cidr functions to completions [#1690](https://github.com/microsoft/vscode-azurearmtools/issues/1690)
+
+### Fixed
+- Update schemas cache to state as of April 23, 2024 (updating past that point is currently blocked by [#1733](https://github.com/microsoft/vscode-azurearmtools/issues/1733))
+- Fix current return values of tenant() for completions [#1701](https://github.com/microsoft/vscode-azurearmtools/issues/1701)
+- Update some snippets to pass Armory checks [#1721](https://github.com/microsoft/vscode-azurearmtools/issues/1721)
+  - Ubuntu Virtual Machine
+  - Virtual Network
+  - Windows Virtual Machine
 - Fix issue when using the Remote Repositories extension [#1647](https://github.com/microsoft/vscode-azurearmtools/issues/1647)
 
 ## Version 0.15.11 (2023-08-29)
