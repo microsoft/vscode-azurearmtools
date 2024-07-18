@@ -640,6 +640,7 @@
         "@types/recursive-readdir": "^2.2.1",
         "@types/rimraf": "2.0.2",
         "@types/shelljs": "0.8.12",
+        "@types/sinon": "17.0.3",
         "@types/vscode": "^1.62.0",
         "@types/webpack": "^4.41.26",
         "@vscode/test-electron": "^2.4.1",
@@ -653,6 +654,7 @@
         "recursive-readdir": "^2.2.3",
         "rimraf": "3.0.2",
         "shelljs": "^0.8.5",
+        "sinon": "^18.0.0",
         "source-map-support": "^0.5.21",
         "ts-node": "^10.9.1",
         "typescript": "^4.5.5",
@@ -666,11 +668,11 @@
         "moment": "^2.29.4",
         "opn": "^5.5.0",
         "strip-json-comments": "^3.1.1",
-        "vscode-azureextensionui": "^0.36.0",
+        "vscode-azureextensionui": "^0.37.0",
         "vscode-jsonrpc": "^8.1.0",
         "vscode-languageclient": "^7.0.0"
     },
     "extensionDependencies": [
         "ms-dotnettools.vscode-dotnet-runtime"
-    ]
+]
 }
