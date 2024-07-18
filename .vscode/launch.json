@@ -63,7 +63,7 @@
         },
         // Launch extension with webpack
         {
-            "name": "Launch Extension (webpack)",
+            "name": "Launch Extension With Webpack (dev)",
             "type": "extensionHost",
             "request": "launch",
             "runtimeExecutable": "${execPath}",
@@ -86,7 +86,7 @@
         },
         // Launch tests with webpack
         {
-            "name": "Launch Tests (webpack)",
+            "name": "Launch Tests With Webpack (dev)",
             "type": "extensionHost",
             "request": "launch",
             "runtimeExecutable": "${execPath}",
