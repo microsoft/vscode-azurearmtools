@@ -8,7 +8,7 @@
 // NOTE: This is used by gulp and should avoid referencing other code if possible
 
 import * as path from 'path';
-import * as common from '../common';
+import * as common from '../extension.bundle';
 import { writeToLog } from './support/testLog';
 
 export const DEFAULT_TESTCASE_TIMEOUT_MS = common.DEFAULT_TESTCASE_TIMEOUT_MS;
