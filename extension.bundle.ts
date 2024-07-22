@@ -2,7 +2,9 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+
 // tslint:disable: no-consecutive-blank-lines // Format-on-save tends to add an extra line to the end of this file
+
 /**
  * This is the external face of extension.bundle.js, the main webpack bundle for the extension.
  * Anything needing to be exposed outside of the extension sources must be exported from here, because
@@ -12,9 +14,13 @@
  *
  * The tests are not packaged with the webpack bundle and therefore only have access to code exported from this file.
  *
- * The tests should import '../extension.bundle.ts'. At design-time they live in tests/ and so will pick up this file (extension.bundle.ts).
- * At runtime the tests live in dist/tests and will therefore pick up the main webpack bundle at dist/extension.bundle.js.
+ * The only non-test source files the .test.ts files should import is '../extension.bundle.ts'.
+ * At design-time and when running tests without webpack, the test sources are in <root>/test, so '../extension.bundle.ts' will
+ *   point the ts compiler to this Typescript file (<root>/extension.bundle.ts).
+ * When running tests in webpack, the test sources live in <root>/dist/test, so '../extension.bundle.ts' will pick up the main
+ *   webpacked bundle at <root>/dist/extension.bundle.js.
  */
+
 import * as TLE from "./src/language/expressions/TLE";
 import * as Json from "./src/language/json/JSON";
 import * as basic from "./src/language/json/Tokenizer";

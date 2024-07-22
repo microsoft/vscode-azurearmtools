@@ -14,12 +14,12 @@ import * as os from 'os';
 import * as path from 'path';
 import * as process from 'process';
 import * as recursiveReadDir from 'recursive-readdir';
+import * as rimraf from 'rimraf';
 import * as shelljs from 'shelljs';
 import { gulp_webpack } from 'vscode-azureextensiondev';
 import { DEFAULT_TESTCASE_TIMEOUT_MS, langServerDotnetVersion, languageServerFolderName } from './common';
 import { getTempFilePath } from './test/support/getTempFilePath';
 
-import rimraf = require('rimraf');
 
 const filesAndFoldersToPackage: string[] = [
     // NOTE: License.txt and languageServer folder are handled separately so should not be in this list
@@ -76,14 +76,13 @@ interface IExpressionMetadata {
     }[];
 }
 
-async function test(): Promise<void> {
+async function pretest(): Promise<void> {
     env.DEBUGTELEMETRY = '0'; // 1=quiet; verbose=see telemetry in console; 0=send telemetry
     env.CODE_TESTS_PATH = path.join(__dirname, 'dist/test');
     env.IS_RUNNING_TESTS = '1';
     // This is the timeout for individual tests
     env.MOCHA_timeout = String(DEFAULT_TESTCASE_TIMEOUT_MS);
     env.MOCHA_enableTimeouts = "1";
-    env.MOCHA_grep = "";
     env.DISABLE_SLOW_TESTS = "";
     env.ALWAYS_ECHO_TEST_LOG = "";
 
@@ -128,11 +127,6 @@ async function test(): Promise<void> {
     console.log(result.error ?? result.output?.filter((o) => !!o).join("\n"));
     if (result.error) {
       process.exit(1);
-    }
-
-    result = cp.spawnSync('node', ['./out/test/runTest.js'], { encoding: "utf-8", stdio: 'inherit', env, shell: true });
-    if (result.status !== 0) {
-        throw new Error("Tests failed");
     }
 }
 
@@ -427,7 +421,7 @@ async function verifyTestsReferenceOnlyExtensionBundle(testFolder: string): Prom
 
 exports['webpack-dev'] = gulp.series(() => gulp_webpack('development'), buildGrammars);
 exports['webpack-prod'] = gulp.series(() => gulp_webpack('production'), buildGrammars);
-exports.test = gulp.series(test);
+exports.pretest = gulp.series(pretest);
 exports['build-grammars'] = buildGrammars;
 exports['watch-grammars'] = (): unknown => gulp.watch('grammars/**', buildGrammars);
 exports['get-language-server'] = getLanguageServer;
