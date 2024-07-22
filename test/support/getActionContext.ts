@@ -27,6 +27,7 @@ export function getActionContext(): IActionContext {
             rethrow: false,
             issueProperties: {}
         },
-        ui: <IAzureUserInput><unknown>undefined
+        ui: <IAzureUserInput><unknown>undefined,
+        valuesToMask: []
     };
 }
