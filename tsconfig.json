@@ -23,5 +23,11 @@
         "src",
         "test",
         "extension.bundle.ts"
+    ],
+    "exclude": [
+        "node_modules",
+        "out",
+        "typings",
+        ".vscode-test",
     ]
 }

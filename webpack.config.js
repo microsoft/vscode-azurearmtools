@@ -12,7 +12,7 @@
 const process = require('process');
 const dev = require("vscode-azureextensiondev");
 
-let DEBUG_WEBPACK = !!process.env.DEBUG_WEBPACK;
+let DEBUG_WEBPACK = !/^(false|0)?$/i.test(process.env.DEBUG_WEBPACK || '');
 
 let config = dev.getDefaultWebpackConfig({
     projectRoot: __dirname,

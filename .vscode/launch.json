@@ -11,7 +11,6 @@
             "args": [
                 "--extensionDevelopmentPath=${workspaceFolder}"
             ],
-            "stopOnEntry": false,
             "sourceMaps": true,
             // outFiles is used for locating generated JavaScript files, see https://code.visualstudio.com/docs/nodejs/nodejs-debugging#_source-maps
             "outFiles": [
@@ -36,7 +35,6 @@
                 "--extensionDevelopmentPath=${workspaceFolder}",
                 "--extensionTestsPath=${workspaceFolder}/out/test/index",
             ],
-            "stopOnEntry": false,
             "sourceMaps": true,
             // outFiles is used for locating generated JavaScript files, see https://code.visualstudio.com/docs/nodejs/nodejs-debugging#_source-maps
             "outFiles": [
@@ -46,6 +44,7 @@
             "env": {
                 // =================================================================
                 "MOCHA_grep": "", // RegExp of tests to run (empty for all)
+                // NOTE: To change this for tests run on the command line, set env.MOCHA_grep in "gulpfile.ts"
                 // =================================================================
                 "MOCHA_invert": "0", // Invert the RegExp
                 "MOCHA_bail": "0", // Bail after first failure
@@ -70,7 +69,6 @@
             "args": [
                 "--extensionDevelopmentPath=${workspaceFolder}"
             ],
-            "stopOnEntry": false,
             "sourceMaps": true,
             "outFiles": [
                 "${workspaceFolder}/dist/**/*.js"
@@ -94,7 +92,6 @@
                 "--extensionDevelopmentPath=${workspaceFolder}",
                 "--extensionTestsPath=${workspaceFolder}/dist/test"
             ],
-            "stopOnEntry": false,
             "sourceMaps": true,
             // outFiles is used for locating generated JavaScript files, see https://code.visualstudio.com/docs/nodejs/nodejs-debugging#_source-maps
             "outFiles": [
@@ -102,7 +99,37 @@
             ],
             "preLaunchTask": "npm: pretest-dev",
             "env": {
-                "MOCHA_grep": "", // RegExp of tests to run (empty for all)
+                "MOCHA_grep": "", // RegExp of tests to run (empty for all) -- affects F5 only asdfg?
+                "MOCHA_invert": "0", // Invert the RegExp
+                "MOCHA_bail": "0", // Bail after first failure
+                "MOCHA_enableTimeouts": "0", // Disable time-outs
+                "DEBUGTELEMETRY": "1", // 1=quiet; verbose=see telemetry in console; 0=send telemetry
+                "NODE_DEBUG": "",
+                "AZCODE_ARM_IGNORE_BUNDLE": "0",
+                "IS_RUNNING_TESTS": "1",
+                "ECHO_OUTPUT_CHANNEL_TO_CONSOLE": "1",
+                "BREAK_ON_ASSERT": "",
+                "ALWAYS_ECHO_TEST_LOG": "" // If 1 or true, always immediately echos test log to console; otherwise test log is only echoed after a failed testcase
+            }
+        },
+        // Launch tests with webpack
+        {
+            "name": "Launch Tests With Webpack (release)",
+            "type": "extensionHost",
+            "request": "launch",
+            "runtimeExecutable": "${execPath}",
+            "args": [
+                "--extensionDevelopmentPath=${workspaceFolder}",
+                "--extensionTestsPath=${workspaceFolder}/dist/test"
+            ],
+            "sourceMaps": true,
+            // outFiles is used for locating generated JavaScript files, see https://code.visualstudio.com/docs/nodejs/nodejs-debugging#_source-maps
+            "outFiles": [
+                "${workspaceFolder}/dist/**/*.js"
+            ],
+            "preLaunchTask": "npm: pretest-prod",
+            "env": {
+                "MOCHA_grep": "", // RegExp of tests to run (empty for all) -- works for F5 only asdfg?
                 "MOCHA_invert": "0", // Invert the RegExp
                 "MOCHA_bail": "0", // Bail after first failure
                 "MOCHA_enableTimeouts": "0", // Disable time-outs
