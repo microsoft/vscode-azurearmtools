@@ -43,6 +43,7 @@ import * as Json from "./language/json/JSON";
 import { ReferenceList } from "./language/ReferenceList";
 import { Span } from "./language/Span";
 import { getAvailableResourceTypesAndVersionsNoThrow } from './languageclient/getAvailableResourceTypesAndVersionsNoThrow';
+import { getLanguageServerVersionInfo } from './languageclient/getLanguageServerVersionInfo';
 import { showAvailableResourceTypesAndVersions } from './languageclient/showAvailableResourceTypesAndVersions';
 import { LanguageServerState, notifyTemplateGraphAvailable, startArmLanguageServerInBackground, waitForLanguageServerAvailable } from "./languageclient/startArmLanguageServer";
 import { InsertionContext } from './snippets/InsertionContext';
@@ -428,6 +429,11 @@ export class AzureRMToolsExtension implements IProvideOpenedDocuments {
                 assert.fail("neverShowAgain failed");
             });
         }
+
+        getLanguageServerVersionInfo().then(info => {
+            ext.outputChannel.appendLine(`Language server version: ${info?.languageServerVersion ?? "Unknown"}`);
+            ext.outputChannel.appendLine(`Schema cache version: ${info?.schemaCacheVersion ?? "Unknown"}`);
+        }).catch(() => { });
     }
 
     public setStaticDocument(documentOrUri: vscode.Uri, content: string): void {
@@ -1312,6 +1318,10 @@ export class AzureRMToolsExtension implements IProvideOpenedDocuments {
             properties.resourceCounts = escapeNonPaths(this.histogramToTelemetryString(resourceCounts));
             properties.invalidResources = escapeNonPaths(this.histogramToTelemetryString(invalidResourceCounts));
             properties.invalidVersions = escapeNonPaths(this.histogramToTelemetryString(invalidVersionCounts));
+
+            let versionInfo = await getLanguageServerVersionInfo();
+            properties.languageServerVersion = versionInfo?.languageServerVersion;
+            properties.schemaCacheVersion = versionInfo?.schemaCacheVersion;
         });
     }
 
