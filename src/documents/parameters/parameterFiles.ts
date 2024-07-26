@@ -44,13 +44,13 @@ export async function selectParameterFile(actionContext: IActionContext, mapping
   }
 
   if (!editor || !sourceUri || editor.document.uri.fsPath !== sourceUri.fsPath) {
-    await ext.ui.showWarningMessage(`Please open an Azure Resource Manager template file before trying to associate or create a parameter file.`);
+    await actionContext.ui.showWarningMessage(`Please open an Azure Resource Manager template file before trying to associate or create a parameter file.`);
     return;
 
   }
   if (editor.document.languageId !== armTemplateLanguageId) {
     actionContext.telemetry.properties.languageId = editor.document.languageId;
-    await ext.ui.showWarningMessage(`The current file "${sourceUri.fsPath}" does not appear to be an Azure Resource Manager Template. Please open one or make sure the editor Language Mode in the context menu is set to "Azure Resource Manager Template".`);
+    await actionContext.ui.showWarningMessage(`The current file "${sourceUri.fsPath}" does not appear to be an Azure Resource Manager Template. Please open one or make sure the editor Language Mode in the context menu is set to "Azure Resource Manager Template".`);
     return;
   }
 
@@ -67,7 +67,7 @@ export async function selectParameterFile(actionContext: IActionContext, mapping
 
   let quickPickList: IQuickPickList = await createParameterFileQuickPickList(mapping, templateUri);
   // Show the quick pick
-  const result: IAzureQuickPickItem<IPossibleParameterFile | undefined> = await ext.ui.showQuickPick(
+  const result: IAzureQuickPickItem<IPossibleParameterFile | undefined> = await actionContext.ui.showQuickPick(
     quickPickList.items,
     {
       canPickMany: false,
@@ -96,7 +96,7 @@ export async function selectParameterFile(actionContext: IActionContext, mapping
     const selectedParamsPath: Uri = paramsPaths[0];
 
     if (!await isParameterFile(selectedParamsPath.fsPath)) {
-      const selectAnywayResult = await ext.ui.showWarningMessage(
+      const selectAnywayResult = await actionContext.ui.showWarningMessage(
         `"${selectedParamsPath.fsPath}" does not appear to be a valid parameter file. Select it anyway?`,
         { modal: true },
         DialogResponses.yes,
@@ -149,7 +149,7 @@ export async function openParameterFile(mapping: DeploymentFileMapping, template
   }
 }
 
-export async function openTemplateFile(mapping: DeploymentFileMapping, parameterUri: Uri | undefined, templateUri: Uri | undefined): Promise<void> {
+export async function openTemplateFile(actionContext: IActionContext, mapping: DeploymentFileMapping, parameterUri: Uri | undefined, templateUri: Uri | undefined): Promise<void> {
   if (parameterUri) {
     templateUri = templateUri ?? mapping.getTemplateFile(parameterUri);
     if (!templateUri) {
@@ -161,7 +161,7 @@ export async function openTemplateFile(mapping: DeploymentFileMapping, parameter
       await window.showTextDocument(doc);
     } else {
       const remove: MessageItem = { title: `Unlink` };
-      const response: MessageItem = await ext.ui.showWarningMessage(
+      const response: MessageItem = await actionContext.ui.showWarningMessage(
         `Could not find associated template file "${templateUri.fsPath}".  Unlink this association?`,
         remove,
         DialogResponses.cancel

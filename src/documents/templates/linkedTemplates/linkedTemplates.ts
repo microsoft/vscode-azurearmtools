@@ -260,7 +260,7 @@ export async function openLinkedTemplateFileCommand(linkedTemplateUri: Uri, acti
         actionContext.telemetry.properties.exists = String(exists);
         if (!exists) {
             const fsPath = linkedTemplateUri.fsPath;
-            const response = await ext.ui.showWarningMessage(
+            const response = await actionContext.ui.showWarningMessage(
                 `Could not find file "${fsPath}".  Do you want to create it?`,
                 DialogResponses.yes,
                 DialogResponses.cancel);
@@ -291,7 +291,7 @@ export async function reloadLinkedTemplateFileCommand(linkedTemplateUri: Uri, ac
         actionContext.telemetry.properties.exists = String(exists);
         if (!exists) {
             const fsPath = linkedTemplateUri.fsPath;
-            const response = await ext.ui.showWarningMessage(
+            const response = await actionContext.ui.showWarningMessage(
                 `Could not find file "${fsPath}".  Do you want to create it?`,
                 DialogResponses.yes,
                 DialogResponses.cancel);
