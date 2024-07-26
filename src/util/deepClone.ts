@@ -26,7 +26,7 @@ export function deepClone<T extends {}>(value: T): T {
         for (let propertyName in value) {
             // tslint:disable-next-line: no-unsafe-any no-any
             if (value.hasOwnProperty(propertyName)) {
-                (<{ [key: string]: unknown }>result)[propertyName] = deepClone(value[propertyName]);
+                (<{ [key: string]: unknown }>result)[propertyName] = deepClone(<{}>value[propertyName]);
             }
         }
     }

@@ -9,7 +9,7 @@ import * as fse from 'fs-extra';
 import * as os from 'os';
 import * as path from 'path';
 import * as process from 'process';
-import * as rimraf from 'rimraf';
+import { rimraf } from 'rimraf';
 import { parseError } from 'vscode-azureextensionui';
 import { isWin32 } from '../testConstants';
 import { writeToError, writeToLog } from './testLog';
@@ -23,18 +23,7 @@ export async function clearCache(): Promise<void> {
     await displayCacheStatus();
     if (fse.pathExistsSync(cacheFolder)) {
         try {
-            await new Promise<void>((resolve, reject): void => {
-                rimraf(
-                    cacheFolder,
-                    (error) => {
-                        // tslint:disable-next-line: strict-boolean-expressions
-                        if (error) {
-                            reject(error);
-                        } else {
-                            resolve();
-                        }
-                    });
-            });
+            await rimraf(cacheFolder);
 
             if (fse.pathExistsSync(cacheFolder)) {
                 writeToError(`...Cache folder still exists!`);

@@ -46,6 +46,11 @@ export class ConsoleOutputChannelWrapper implements IAzExtOutputChannel {
         this.outputChannel.show(column, preserveFocus);
     }
 
+    public replace(value: string): void {
+        console.log(value);
+        this.outputChannel.replace(value);
+    }
+
     public hide(): void {
         this.outputChannel.hide();
     }

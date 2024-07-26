@@ -12,7 +12,7 @@ import { InsertItem } from "./insertItem";
 
 export class ExtractItem {
     // tslint:disable-next-line:no-empty
-    constructor(private ui: IAzureUserInput) {
+    constructor(private ui: IAzureUserInput) { //asdfg test
     }
 
     public async extractParameter(editor: vscode.TextEditor, template: DeploymentTemplateDoc, context: IActionContext): Promise<void> {

@@ -24,7 +24,7 @@ export async function queryCreateParameterFile(actionContext: IActionContext, sc
     const required = <QuickPickItem>{ label: "Only required parameters", description: "Uses only parameters that have no default value in the template file" };
     const templateUri = scope.document.documentUri;
 
-    const whichParams = await ext.ui.showQuickPick([all, required], {
+    const whichParams = await actionContext.ui.showQuickPick([all, required], {
         placeHolder: `Include which parameters from ${path.basename(templateUri.fsPath)}?`
     });
     const onlyRequiredParams = whichParams === required;

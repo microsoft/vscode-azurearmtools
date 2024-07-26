@@ -21,7 +21,7 @@ import { getTempFilePath } from '../support/getTempFilePath';
 import { stringify } from '../support/stringify';
 
 suite("ExtractItem", async (): Promise<void> => {
-    let testUserInput: TestUserInput = new TestUserInput(vscode);
+    let testUserInput: TestUserInput = new TestUserInput(vscode); //asdfg
     async function runExtractParameterTest(startTemplate: string | IPartialDeploymentTemplate, selectedText: string, testInputs: (string | RegExp)[], codeActionsCount: number = 2, expectedTemplate?: string | IPartialDeploymentTemplate): Promise<void> {
         await runExtractItemTest(startTemplate, selectedText, testInputs, codeActionsCount, expectedTemplate, async (extractItem, template, editor) => await extractItem.extractParameter(editor, template, getActionContext()));
     }
