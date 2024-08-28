@@ -14,3 +14,16 @@ pipelines:
           lastModifiedDate: 2024-08-28
         armory:
           lastModifiedDate: 2024-08-28
+  21966:
+    retail:
+      source:
+        credscan:
+          lastModifiedDate: 2024-08-28
+        policheck:
+          lastModifiedDate: 2024-08-28
+        eslint:
+          lastModifiedDate: 2024-08-28
+        psscriptanalyzer:
+          lastModifiedDate: 2024-08-28
+        armory:
+          lastModifiedDate: 2024-08-28
