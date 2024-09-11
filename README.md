@@ -2,8 +2,8 @@
 
 [![Version](https://img.shields.io/visual-studio-marketplace/v/msazurermtools.azurerm-vscode-tools.svg)](https://marketplace.visualstudio.com/items?itemName=msazurermtools.azurerm-vscode-tools) [![Installs](https://img.shields.io/visual-studio-marketplace/i/msazurermtools.azurerm-vscode-tools.svg)](https://marketplace.visualstudio.com/items?itemName=msazurermtools.azurerm-vscode-tools) [![Build Status](https://dev.azure.com/ms-azuretools/AzCode/_apis/build/status/vscode-azurearmtools)](https://dev.azure.com/ms-azuretools/AzCode/_build/latest?definitionId=10)
 
-### Important notice
-*The ARM Tools extension is now in Maintenance Mode. That means that we will continue to support currently implemented features & capabilities, but we will not be able to prioritize adding new features. To take advantage of the best experience for deploying to Azure with infrastructure-as-code, we recommend switching to Bicep or Terraform. Please note, that while this VS Code extension is in maintenance mode, ARM Templates as a whole are still fully supported and new features are still being added to the ARM Template language and runtime.*
+# Important notice
+The ARM Tools extension is now in Maintenance Mode. That means that we will continue to support currently implemented features & capabilities, but we will not be able to prioritize adding new features. To take advantage of the best experience for deploying to Azure with infrastructure-as-code, we recommend switching to Bicep or Terraform. Please note, that while this VS Code extension is in maintenance mode, ARM Templates as a whole are still fully supported and new features are still being added to the ARM Template language and runtime.
 
 # Overview
 The Azure Resource Manager (ARM) Tools for Visual Studio Code provides language support, resource snippets, and resource auto-completion to help you create and validate Azure Resource Manager templates.
