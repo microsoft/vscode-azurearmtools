@@ -8,6 +8,14 @@ resources:
 variables:
   Codeql.Enabled: true
 
+schedules:
+  - cron: "30 14 * * 0" # This sets the schedule to run weekly on Sundays at 2:30 PM
+    displayName: Weekly build
+    branches:
+      include:
+        - main
+    always: true
+
 extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1esPipelines
   parameters:
