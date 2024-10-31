@@ -2,7 +2,7 @@
 
 All notable changes to the "vscode-azurearmtools" extension will be documented in this file.
 
-## Version 0.15.13 (Nov 2024)
+## Version 0.15.13 (Oct 31, 2024)
 
 ### Changed
 
