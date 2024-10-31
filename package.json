@@ -2,7 +2,7 @@
     "name": "azurerm-vscode-tools",
     "displayName": "Azure Resource Manager (ARM) Tools",
     "description": "Language server, editing tools and snippets for Azure Resource Manager (ARM) template files.",
-    "version": "0.15.13-alpha",
+    "version": "0.15.13",
     "publisher": "msazurermtools",
     "config": {
         "$comment.ARM_LANGUAGE_SERVER_NUGET_VERSION": "E.g., 3.0.0-preview.24163.1, or lease blank to pick up the latest",
