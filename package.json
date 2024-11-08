@@ -656,7 +656,7 @@
         "glob": "^7.2.3",
         "glob-promise": "^4.2.2",
         "gulp": "^5.0.0",
-        "mocha": "^10.2.0",
+        "mocha": "^10.8.2",
         "mocha-junit-reporter": "^2.2.1",
         "mocha-multi-reporters": "^1.5.1",
         "nuget": "^2.0.2",
