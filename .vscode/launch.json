@@ -99,7 +99,7 @@
             ],
             "preLaunchTask": "npm: pretest-dev",
             "env": {
-                "MOCHA_grep": "", // RegExp of tests to run (empty for all) -- affects F5 only asdfg?
+                "MOCHA_grep": "", // RegExp of tests to run (empty for all) -- affects F5 only
                 "MOCHA_invert": "0", // Invert the RegExp
                 "MOCHA_bail": "0", // Bail after first failure
                 "MOCHA_enableTimeouts": "0", // Disable time-outs
@@ -129,7 +129,7 @@
             ],
             "preLaunchTask": "npm: pretest-prod",
             "env": {
-                "MOCHA_grep": "", // RegExp of tests to run (empty for all) -- works for F5 only asdfg?
+                "MOCHA_grep": "", // RegExp of tests to run (empty for all) -- works for F5 only
                 "MOCHA_invert": "0", // Invert the RegExp
                 "MOCHA_bail": "0", // Bail after first failure
                 "MOCHA_enableTimeouts": "0", // Disable time-outs

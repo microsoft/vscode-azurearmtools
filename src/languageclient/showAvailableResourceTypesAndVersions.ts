@@ -3,7 +3,7 @@
 // Licensed under the MIT License. See License.md in the project root for license information.
 // ---------------------------------------------------------------------------------------------
 
-import { callWithTelemetryAndErrorHandlingSync } from "vscode-azureextensionui";
+import { callWithTelemetryAndErrorHandlingSync } from "@microsoft/vscode-azext-utils";
 import { ext } from "../extensionVariables";
 import { CaseInsensitiveMap } from "../util/CaseInsensitiveMap";
 import { getAvailableResourceTypesAndVersionsNoThrow } from "./getAvailableResourceTypesAndVersionsNoThrow";

@@ -5,9 +5,9 @@
 // tslint:disable:promise-function-async max-line-length // Grandfathered in
 
 // CONSIDER: Refactor this file
+import { callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createAzExtOutputChannel, IActionContext, ITelemetryContext, parseError, registerCommand, registerUIExtensionVariables, TelemetryProperties } from "@microsoft/vscode-azext-utils";
 import * as path from 'path';
 import * as vscode from "vscode";
-import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createAzExtOutputChannel, IActionContext, ITelemetryContext, parseError, registerCommand, registerUIExtensionVariables, TelemetryProperties } from "vscode-azureextensionui";
 import { armTemplateLanguageId, configKeys, configPrefix, documentSchemes, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource, globalStateKeys, outputChannelName } from "../common";
 import { delay } from "../test/support/delay";
 import { writeToLog } from '../test/support/testLog';
@@ -95,7 +95,6 @@ export async function activateInternal(context: vscode.ExtensionContext, perfSta
         ext.extensionStartupComplete = false;
 
         ext.context = context;
-        ext.ui = new AzureUserInput(context.globalState);
         let outputChannel = createAzExtOutputChannel(outputChannelName, configPrefix);
         if (echoOutputChannelToConsole) {
             outputChannel = new ConsoleOutputChannelWrapper(outputChannel);
@@ -211,7 +210,7 @@ export class AzureRMToolsExtension implements IProvideOpenedDocuments {
         registerCommand("azurerm-vscode-tools.treeview.goto", (_actionContext: IActionContext, range: vscode.Range) => {
             jsonOutline.revealRangeInEditor(range);
         });
-        registerCommand("azurerm-vscode-tools.sortTemplate", async (_context: IActionContext, uri?: vscode.Uri, editor?: vscode.TextEditor) => {
+        registerCommand("azurerm-vscode-tools.sortTemplate", async (actionContext: IActionContext, uri?: vscode.Uri, editor?: vscode.TextEditor) => {
             editor = editor || vscode.window.activeTextEditor;
             uri = uri || vscode.window.activeTextEditor?.document.uri;
             // If "Sort template..." was called from the context menu for ARM template outline
@@ -219,7 +218,7 @@ export class AzureRMToolsExtension implements IProvideOpenedDocuments {
                 uri = vscode.window.activeTextEditor?.document.uri;
             }
             if (uri && editor) {
-                const sectionType = await ext.ui.showQuickPick(getQuickPickItems(), { placeHolder: 'What do you want to sort?' });
+                const sectionType = await actionContext.ui.showQuickPick(getQuickPickItems(), { placeHolder: 'What do you want to sort?' });
                 await this.sortTemplate(sectionType.value, uri, editor);
             }
         });
@@ -251,9 +250,9 @@ export class AzureRMToolsExtension implements IProvideOpenedDocuments {
                 await openParameterFile(this._mapping, sourceTemplateUri, undefined);
             });
         registerCommand(
-            "azurerm-vscode-tools.openTemplateFile", async (_actionContext: IActionContext, sourceParamUri?: vscode.Uri) => {
+            "azurerm-vscode-tools.openTemplateFile", async (actionContext: IActionContext, sourceParamUri?: vscode.Uri) => {
                 sourceParamUri = sourceParamUri ?? vscode.window.activeTextEditor?.document.uri;
-                await openTemplateFile(this._mapping, sourceParamUri, undefined);
+                await openTemplateFile(actionContext, this._mapping, sourceParamUri, undefined);
             });
         registerCommand(
             "azurerm-vscode-tools.codeLens.openLinkedTemplateFile", async (actionContext: IActionContext, linkedTemplateUri: vscode.Uri) => {
@@ -272,7 +271,7 @@ export class AzureRMToolsExtension implements IProvideOpenedDocuments {
                 uri = vscode.window.activeTextEditor?.document.uri;
             }
             if (uri && editor) {
-                const sectionType = await ext.ui.showQuickPick(getItemTypeQuickPicks(), { placeHolder: 'What do you want to insert?' });
+                const sectionType = await actionContext.ui.showQuickPick(getItemTypeQuickPicks(), { placeHolder: 'What do you want to insert?' });
                 await this.insertItem(sectionType.value, actionContext, uri, editor);
             }
         });
@@ -299,7 +298,7 @@ export class AzureRMToolsExtension implements IProvideOpenedDocuments {
         registerCommand("azurerm-vscode-tools.codeAction.addMissingRequiredParameters", async (actionContext: IActionContext, source?: vscode.Uri, args?: IAddMissingParametersArgs) => {
             await this.addMissingParameters(actionContext, source, args, true);
         });
-        registerCommand("azurerm-vscode-tools.codeAction.extractParameter", async (_context: IActionContext, uri?: vscode.Uri, editor?: vscode.TextEditor) => {
+        registerCommand("azurerm-vscode-tools.codeAction.extractParameter", async (actionContext: IActionContext, uri?: vscode.Uri, editor?: vscode.TextEditor) => {
             editor = editor || vscode.window.activeTextEditor;
             uri = uri || vscode.window.activeTextEditor?.document.uri;
             if (editor) {
@@ -307,10 +306,10 @@ export class AzureRMToolsExtension implements IProvideOpenedDocuments {
                 if (!deploymentTemplate) {
                     return;
                 }
-                await new ExtractItem(ext.ui).extractParameter(editor, deploymentTemplate, _context);
+                await new ExtractItem(actionContext.ui).extractParameter(editor, deploymentTemplate, actionContext);
             }
         });
-        registerCommand("azurerm-vscode-tools.codeAction.extractVariable", async (_context: IActionContext, uri?: vscode.Uri, editor?: vscode.TextEditor) => {
+        registerCommand("azurerm-vscode-tools.codeAction.extractVariable", async (actionContext: IActionContext, uri?: vscode.Uri, editor?: vscode.TextEditor) => {
             editor = editor || vscode.window.activeTextEditor;
             uri = uri || vscode.window.activeTextEditor?.document.uri;
             if (editor) {
@@ -318,7 +317,7 @@ export class AzureRMToolsExtension implements IProvideOpenedDocuments {
                 if (!deploymentTemplate) {
                     return;
                 }
-                await new ExtractItem(ext.ui).extractVariable(editor, deploymentTemplate, _context);
+                await new ExtractItem(actionContext.ui).extractVariable(editor, deploymentTemplate, actionContext);
             }
         });
 
@@ -492,12 +491,12 @@ export class AzureRMToolsExtension implements IProvideOpenedDocuments {
         }
     }
 
-    private async insertItem(sectionType: TemplateSectionType, context: IActionContext, documentUri?: vscode.Uri, editor?: vscode.TextEditor): Promise<void> {
+    private async insertItem(sectionType: TemplateSectionType, actionContext: IActionContext, documentUri?: vscode.Uri, editor?: vscode.TextEditor): Promise<void> {
         editor = editor || vscode.window.activeTextEditor;
         documentUri = documentUri || editor?.document.uri;
         if (editor && documentUri && editor.document.uri.fsPath === documentUri.fsPath) {
             let deploymentTemplate = this.getOpenedDeploymentTemplate(editor.document);
-            await new InsertItem(ext.ui).insertItem(deploymentTemplate, sectionType, editor, context);
+            await new InsertItem(actionContext.ui).insertItem(deploymentTemplate, sectionType, editor, actionContext);
         }
     }
 
@@ -941,7 +940,7 @@ export class AzureRMToolsExtension implements IProvideOpenedDocuments {
                 const notNow: vscode.MessageItem = { title: "Not now" };
                 const neverForThisFile: vscode.MessageItem = { title: "Never for this file" };
 
-                const response = await ext.ui.showWarningMessage(
+                const response = await actionContext.ui.showWarningMessage(
                     `Warning: You are using a deprecated schema version that is no longer maintained.  Would you like us to update "${path.basename(document.uri.path)}" to use the newest schema?`,
                     {
                         learnMoreLink: "https://aka.ms/vscode-azurearmtools-updateschema"

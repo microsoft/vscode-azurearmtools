@@ -3,11 +3,11 @@
  *  Licensed under the MIT License. See License.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { callWithTelemetryAndErrorHandling, IActionContext } from "@microsoft/vscode-azext-utils";
 import * as fse from 'fs-extra';
 import * as path from 'path';
 import * as stripJsonComments from "strip-json-comments";
 import { window } from 'vscode';
-import { callWithTelemetryAndErrorHandling, IActionContext } from 'vscode-azureextensionui';
 import { assetsPath, extensionName } from '../../common';
 import { assert } from '../fixed_assert';
 import { Span } from '../language/Span';

@@ -5,6 +5,7 @@
 
 // tslint:disable:no-unsafe-any no-console prefer-template no-implicit-dependencies export-name
 
+import { gulp_webpack } from '@microsoft/vscode-azext-dev';
 import { downloadAndUnzipVSCode, resolveCliArgsFromVSCodeExecutablePath } from '@vscode/test-electron';
 import * as assert from 'assert';
 import * as cp from 'child_process';
@@ -16,7 +17,6 @@ import * as process from 'process';
 import * as recursiveReadDir from 'recursive-readdir';
 import * as rimraf from 'rimraf';
 import * as shelljs from 'shelljs';
-import { gulp_webpack } from 'vscode-azureextensiondev';
 import { DEFAULT_TESTCASE_TIMEOUT_MS, langServerDotnetVersion, languageServerFolderName } from './common';
 import { getTempFilePath } from './test/support/getTempFilePath';
 
@@ -113,7 +113,7 @@ async function pretest(): Promise<void> {
         shell: true,
     });
     if (result.status !== 0) {
-        throw new Error("Failed to install dotnet runtime extension: " + result.error ?? result.output?.filter((o) => !!o).join("\n") ?? "Unknown error");
+        throw new Error("Failed to install dotnet runtime extension: " + (result.error ?? result.output?.filter((o) => !!o).join("\n") ?? "Unknown error"));
     }
     console.log("Installed extensions:");
     result = cp.spawnSync(cliPath, [

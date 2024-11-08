@@ -13,11 +13,11 @@ const DEBUG_BREAK_AFTER_DIAGNOSTICS_COMPLETE = false;
 // tslint:disable:object-literal-key-quotes no-http-string non-literal-fs-path
 // tslint:disable:no-non-null-assertion
 
+import { parseError } from "@microsoft/vscode-azext-utils";
 import * as assert from "assert";
 import * as fse from "fs-extra";
 import * as path from 'path';
 import { Diagnostic, DiagnosticSeverity, Disposable, languages, Position, Range, TextDocument, Uri } from "vscode";
-import { parseError } from "vscode-azureextensionui";
 import { backendValidationDiagnosticsSource, diagnosticsCompletePrefix, expressionsDiagnosticsSource, ExpressionType, ext, LanguageServerState, languageServerStateSource, readUtf8FileWithBom } from "../../extension.bundle";
 import { bail } from "../global.test";
 import { DEFAULT_TESTCASE_TIMEOUT_MS, DISABLE_LANGUAGE_SERVER } from "../testConstants";
@@ -315,7 +315,7 @@ export async function getDiagnosticsForDocument(
     const documentUri = document instanceof Uri ? document : document.uri;
 
     let dispose: Disposable | undefined;
-    let timer: NodeJS.Timer | undefined;
+    let timer: NodeJS.Timeout | undefined;
 
     // Default to all sources
     let filterSources: DiagnosticSource[] = Array.from(Object.values(diagnosticSources));

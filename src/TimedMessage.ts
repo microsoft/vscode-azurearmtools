@@ -2,8 +2,8 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+import { callWithTelemetryAndErrorHandling, IActionContext } from "@microsoft/vscode-azext-utils";
 import { commands, MessageItem, Uri, window } from 'vscode';
-import { callWithTelemetryAndErrorHandling, IActionContext } from "vscode-azureextensionui";
 import { ext } from "./extensionVariables";
 import { assert } from './fixed_assert';
 import { minutesToMs, weeksToMs } from "./util/time";

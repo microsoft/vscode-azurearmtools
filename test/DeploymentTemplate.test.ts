@@ -5,11 +5,11 @@
 // tslint:disable:no-unused-expression max-func-body-length promise-function-async max-line-length insecure-random
 // tslint:disable:object-literal-key-quotes no-function-expression no-non-null-assertion align no-http-string
 
+import { parseError } from "@microsoft/vscode-azext-utils";
 import * as assert from "assert";
 import { randomBytes } from "crypto";
 import { Context, Suite } from "mocha";
 import { Uri } from "vscode";
-import { parseError } from "vscode-azureextensionui";
 import { DefinitionKind, DeploymentTemplateDoc, getVSCodeRangeFromSpan, Histogram, INamedDefinition, IncorrectArgumentsCountIssue, IParameterDefinition, Issue, IssueKind, IVariableDefinition, Json, LineColPos, ReferenceInVariableDefinitionsVisitor, ReferenceList, Span, TemplateScope, UnrecognizedUserFunctionIssue, UnrecognizedUserNamespaceIssue } from "../extension.bundle";
 import { diagnosticSources, IDeploymentTemplate, testDiagnostics } from "./support/diagnostics";
 import { getEmptyCodeActionContext } from "./support/getEmptyCodeActionContext";

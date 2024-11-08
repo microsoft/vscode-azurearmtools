@@ -2,10 +2,10 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+import { IActionContext, UserCancelledError } from "@microsoft/vscode-azext-utils";
 import * as fse from 'fs-extra';
 import * as path from 'path';
 import { QuickPickItem, Uri, window } from "vscode";
-import { IActionContext, UserCancelledError } from 'vscode-azureextensionui';
 import { ext } from '../../extensionVariables';
 import { isTleExpression } from "../../language/expressions/isTleExpression";
 import * as Json from "../../language/json/JSON";
@@ -24,7 +24,7 @@ export async function queryCreateParameterFile(actionContext: IActionContext, sc
     const required = <QuickPickItem>{ label: "Only required parameters", description: "Uses only parameters that have no default value in the template file" };
     const templateUri = scope.document.documentUri;
 
-    const whichParams = await ext.ui.showQuickPick([all, required], {
+    const whichParams = await actionContext.ui.showQuickPick([all, required], {
         placeHolder: `Include which parameters from ${path.basename(templateUri.fsPath)}?`
     });
     const onlyRequiredParams = whichParams === required;
