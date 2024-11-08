@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { IActionContext, IAzureUserInput, UserCancelledError } from "@microsoft/vscode-azext-utils";
 import * as vscode from "vscode";
-import { IActionContext, IAzureUserInput, UserCancelledError } from "vscode-azureextensionui";
 import { isTleExpression } from "../../language/expressions/isTleExpression";
 import { ObjectValue } from "../../language/json/JSON";
 import { DeploymentTemplateDoc } from "./DeploymentTemplateDoc";

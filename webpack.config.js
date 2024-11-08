@@ -10,12 +10,13 @@
 'use strict';
 
 const process = require('process');
-const dev = require("vscode-azureextensiondev");
+const dev = require("@microsoft/vscode-azext-dev");
 
 let DEBUG_WEBPACK = !/^(false|0)?$/i.test(process.env.DEBUG_WEBPACK || '');
 
 let config = dev.getDefaultWebpackConfig({
     projectRoot: __dirname,
+    target: 'node',
     verbosity: DEBUG_WEBPACK ? 'debug' : 'normal'
 });
 

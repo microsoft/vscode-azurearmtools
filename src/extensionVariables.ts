@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See License.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { IAzExtOutputChannel } from "@microsoft/vscode-azext-utils";
 import * as os from 'os';
 import * as path from "path";
 import * as vscode from "vscode";
-import { IAzExtOutputChannel, IAzureUserInput } from "vscode-azureextensionui";
 import { LanguageClient } from 'vscode-languageclient/node';
 import { configPrefix, isWebpack } from "../common";
 import { DeploymentFileMapping } from "./documents/parameters/DeploymentFileMapping";
@@ -29,7 +29,6 @@ class ExtensionVariables {
     private _context: InitializeBeforeUse<vscode.ExtensionContext> = new InitializeBeforeUse<vscode.ExtensionContext>("_context");
     private _jsonOutlineProvider: InitializeBeforeUse<JsonOutlineProvider> = new InitializeBeforeUse<JsonOutlineProvider>("_jsonOutlineProvider");
     private _outputChannel: InitializeBeforeUse<IAzExtOutputChannel> = new InitializeBeforeUse<IAzExtOutputChannel>("_outputChannel");
-    private _ui: InitializeBeforeUse<IAzureUserInput> = new InitializeBeforeUse<IAzureUserInput>("_ui");
     private _languageServerState: LanguageServerState = LanguageServerState.NotStarted;
     private _languageServerStateEmitter: vscode.EventEmitter<void> = new vscode.EventEmitter<void>();
 
@@ -52,13 +51,6 @@ class ExtensionVariables {
     }
     public get outputChannel(): IAzExtOutputChannel {
         return this._outputChannel.value;
-    }
-
-    public set ui(ui: IAzureUserInput) {
-        this._ui.value = ui;
-    }
-    public get ui(): IAzureUserInput {
-        return this._ui.value;
     }
 
     public EOL: string = os.EOL;

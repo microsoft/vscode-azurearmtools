@@ -3,8 +3,8 @@
 // Licensed under the MIT License. See License.md in the project root for license information.
 // ---------------------------------------------------------------------------------------------
 
+import { IAzExtOutputChannel } from "@microsoft/vscode-azext-utils";
 import * as vscode from "vscode";
-import { IAzExtOutputChannel } from "vscode-azureextensionui";
 
 /**
  * Wraps an output channel to echo everything logged to the console
@@ -44,6 +44,11 @@ export class ConsoleOutputChannelWrapper implements IAzExtOutputChannel {
     public show(column?: any, preserveFocus?: boolean | undefined): void {
         // tslint:disable-next-line: no-unsafe-any
         this.outputChannel.show(column, preserveFocus);
+    }
+
+    public replace(value: string): void {
+        console.log(value);
+        this.outputChannel.replace(value);
     }
 
     public hide(): void {

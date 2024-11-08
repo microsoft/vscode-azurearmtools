@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { callWithTelemetryAndErrorHandlingSync, IActionContext, parseError } from "@microsoft/vscode-azext-utils";
 import * as os from 'os';
-import { callWithTelemetryAndErrorHandlingSync, IActionContext, parseError } from 'vscode-azureextensionui';
 import { Message } from 'vscode-jsonrpc';
 import { CloseAction, ErrorAction, ErrorHandler } from 'vscode-languageclient';
 import { languageServerName } from '../../common';

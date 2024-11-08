@@ -32,7 +32,7 @@
             [
                 "vscode",
                 "gulp",
-                "vscode-azureextensiondev"
+                "@microsoft/vscode-azext-dev"
             ]
         ],
         "no-increment-decrement": false,

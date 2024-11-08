@@ -5,7 +5,7 @@
 // ---------------------------------------------------------------------------------------------
 
 // tslint:disable-next-line: no-suspicious-comment
-// TODO: Gives this on build machine only:   Error: "registerUIExtensionVariables" must be called before using the vscode-azureextensionui package.
+// TODO: Gives this on build machine only:   Error: "registerUIExtensionVariables" must be called before using the @microsoft/vscode-azext-utils package.
 /*
 import * as assert from "assert";
 import { getAvailableResourceTypesAndVersions } from "../../extension.bundle";

@@ -3,11 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, IActionContext, ITelemetryContext, parseError } from "@microsoft/vscode-azext-utils";
 import * as fse from 'fs-extra';
 import * as os from 'os';
 import * as path from 'path';
 import { CancellationToken, CompletionContext, CompletionItem, CompletionList, Diagnostic, Event, EventEmitter, Position, ProgressLocation, TextDocument, Uri, window, workspace } from 'vscode';
-import { callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, IActionContext, ITelemetryContext, parseError } from 'vscode-azureextensionui';
 import { LanguageClient, LanguageClientOptions, RevealOutputChannelOn, ServerOptions } from 'vscode-languageclient/node';
 import { armTemplateLanguageId, backendValidationDiagnosticsSource, configKeys, configPrefix, downloadDotnetVersion, isRunningTests, languageFriendlyName, languageServerFolderName, languageServerName, notifications } from '../../common';
 import { delay } from '../../test/support/delay';

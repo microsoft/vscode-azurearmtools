@@ -3,8 +3,8 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
+import { parseError } from "@microsoft/vscode-azext-utils";
 import * as os from 'os';
-import { parseError } from 'vscode-azureextensionui';
 
 /**
  * "Wraps" an existing throwable item, placing a new message at the beginning of the current message.

@@ -5,12 +5,12 @@
 // tslint:disable:max-func-body-length align max-line-length
 // tslint:disable:no-non-null-assertion no-invalid-template-strings
 
+import { parseError } from "@microsoft/vscode-azext-utils";
 import * as assert from "assert";
 import * as fse from 'fs-extra';
 import { Context, Done } from "mocha";
 import * as path from "path";
 import * as vscode from "vscode";
-import { parseError } from "vscode-azureextensionui";
 import { ext, IElementInfo, JsonOutlineProvider, shortenTreeLabel } from "../extension.bundle";
 import { getTempFilePath } from "./support/getTempFilePath";
 

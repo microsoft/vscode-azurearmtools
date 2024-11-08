@@ -4,9 +4,9 @@
 
 // tslint:disable:object-literal-key-quotes no-http-string max-func-body-length
 
+import { parseError } from "@microsoft/vscode-azext-utils";
 import * as assert from "assert";
 import { Uri } from "vscode";
-import { parseError } from "vscode-azureextensionui";
 import { assertNever, LinkedFileLoadState, notifications, notifyTemplateGraphAvailable } from "../../extension.bundle";
 import { ExpectedDiagnostics, IExpectedDiagnostic, simplifyBadTypeResourceMessage, testDiagnostics, testDiagnosticsFromUri } from "../support/diagnostics";
 import { ensureLanguageServerAvailable } from "../support/ensureLanguageServerAvailable";

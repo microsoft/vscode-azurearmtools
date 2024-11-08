@@ -9,7 +9,7 @@
                 "gulp",
                 "dev",
                 "mocha",
-                "vscode-azureextensiondev",
+                "@microsoft/vscode-azext-dev",
                 "@vscode/test-electron"
             ]
         ],

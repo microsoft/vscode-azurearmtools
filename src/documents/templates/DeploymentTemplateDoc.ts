@@ -4,10 +4,10 @@
 
 // tslint:disable: max-classes-per-file // Private classes are related to DeploymentTemplate implementation
 
+import { IActionContext } from "@microsoft/vscode-azext-utils";
 import * as assert from 'assert';
 import * as path from 'path';
 import { CodeAction, CodeActionContext, CodeActionKind, Command, DocumentLink, Range, Selection, Uri } from "vscode";
-import { IActionContext } from 'vscode-azureextensionui';
 import { configKeys, templateKeys } from "../../../common";
 import { TemplateScopeKind } from '../../../extension.bundle';
 import { ext } from '../../extensionVariables';

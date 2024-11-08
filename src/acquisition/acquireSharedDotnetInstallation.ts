@@ -3,8 +3,8 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
+import { callWithTelemetryAndErrorHandling, IActionContext, parseError } from "@microsoft/vscode-azext-utils";
 import { commands } from 'vscode';
-import { callWithTelemetryAndErrorHandling, IActionContext, parseError } from 'vscode-azureextensionui';
 import { ext } from '../extensionVariables';
 import { wrapError } from '../util/wrapError';
 
