@@ -9,7 +9,6 @@ import { callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSyn
 import * as path from 'path';
 import * as vscode from "vscode";
 import { armTemplateLanguageId, configKeys, configPrefix, documentSchemes, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource, globalStateKeys, outputChannelName } from "../common";
-import { delay } from "../test/support/delay";
 import { writeToLog } from '../test/support/testLog';
 import { DeploymentDocument, ResolvableCodeLens } from "./documents/DeploymentDocument";
 import { DeploymentFileMapping } from "./documents/parameters/DeploymentFileMapping";
@@ -52,6 +51,7 @@ import { SnippetManager } from "./snippets/SnippetManager";
 import { TimedMessage } from './TimedMessage';
 import { assertNever } from './util/assertNever';
 import { CachedPromise } from "./util/CachedPromise";
+import { delay } from "./util/delay";
 import { escapeNonPaths } from "./util/escapeNonPaths";
 import { expectTemplateDocument } from "./util/expectDocument";
 import { getRenameError } from "./util/getRenameError";
@@ -1177,7 +1177,7 @@ export class AzureRMToolsExtension implements IProvideOpenedDocuments {
                             this._paramsStatusBarItem.show();
                             return;
 
-                        case LanguageServerState.LoadingSchemas:
+                        case LanguageServerState.LoadingInitialSchemas:
                         case LanguageServerState.NotStarted:
                         case LanguageServerState.Running:
                         case LanguageServerState.Starting:

@@ -4,15 +4,14 @@
 
 import * as assert from "assert";
 import { Extension, extensions } from "vscode";
-import { delayWhileSync, ext } from "../../extension.bundle";
-import { delay } from "./delay";
+import { delay, delayWhile, ext } from "../../extension.bundle";
 import { writeToLog } from "./testLog";
 
 export async function ensureExtensionHasInitialized(totalTimeout: number): Promise<void> {
     async function ensureDotnetExtensionActivated(): Promise<void> {
         writeToLog(">>> Looking for dotnet extension ", true);
         let extensionDotnet: Extension<unknown> | undefined;
-        await delayWhileSync(
+        await delayWhile(
             5 * 1000,
             () => {
                 extensionDotnet = extensions.getExtension("ms-dotnettools.vscode-dotnet-runtime");

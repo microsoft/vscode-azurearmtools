@@ -7,8 +7,7 @@
 // tslint:disable:prefer-template
 
 import { CompletionItem, TextDocument, workspace } from 'vscode';
-import { ext, ICompletionsSpyResult } from '../../extension.bundle';
-import { delay } from '../support/delay';
+import { delay, ext, ICompletionsSpyResult } from '../../extension.bundle';
 
 const defaultTimeout: number = 200 * 1000;
 

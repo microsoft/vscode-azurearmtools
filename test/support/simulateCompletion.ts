@@ -1,7 +1,6 @@
 import * as assert from 'assert';
 import { Selection, SnippetString, TextEditor } from 'vscode';
-import { DeploymentTemplateDoc, getVSCodeRangeFromSpan } from '../../extension.bundle';
-import { delay } from './delay';
+import { delay, DeploymentTemplateDoc, getVSCodeRangeFromSpan } from '../../extension.bundle';
 import { stringify } from './stringify';
 import { writeToLog } from './testLog';
 import { typeInDocumentAndWait } from './typeInDocumentAndWait';

@@ -19,7 +19,7 @@
             "preLaunchTask": "npm: compile",
             "env": {
                 "AZCODE_ARM_IGNORE_BUNDLE": "1",
-                "DEBUGTELEMETRY": "1", // 1=quiet; verbose=see telemetry in console; 0=send telemetry
+                "DEBUGTELEMETRY": "verbose", // 1=quiet; verbose=see telemetry in console; 0=send telemetry
                 "NODE_DEBUG": "",
                 "BREAK_ON_ASSERT": "1",
                 "ECHO_OUTPUT_CHANNEL_TO_CONSOLE": "1",
@@ -51,7 +51,7 @@
                 "AZCODE_ARM_IGNORE_BUNDLE": "1",
                 "IS_RUNNING_TESTS": "1",
                 "MOCHA_enableTimeouts": "0", // Disable time-outs
-                "DEBUGTELEMETRY": "verbose", // 1=quiet; verbose=see telemetry in console; 0=send telemetry
+                "DEBUGTELEMETRY": "1", // 1=quiet; verbose=see telemetry in console; 0=send telemetry
                 "NODE_DEBUG": "",
                 "DISABLE_LANGUAGE_SERVER": "",
                 "DISABLE_SLOW_TESTS": "",
@@ -75,7 +75,7 @@
             ],
             "preLaunchTask": "npm: webpack",
             "env": {
-                "DEBUGTELEMETRY": "1", // 1=quiet; verbose=see telemetry in console; 0=send telemetry
+                "DEBUGTELEMETRY": "verbose", // 1=quiet; verbose=see telemetry in console; 0=send telemetry
                 "NODE_DEBUG": "",
                 "DEBUG_WEBPACK": "",
                 "AZCODE_ARM_IGNORE_BUNDLE": "0",

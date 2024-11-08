@@ -3,7 +3,7 @@
 // Licensed under the MIT License. See License.md in the project root for license information.
 // ---------------------------------------------------------------------------------------------
 
-export async function delayWhileSync(pollMs: number, predicate: () => boolean, timeout: number = 0, timeoutErrorMessage: string = "Timed out"): Promise<void> {
+export async function delayWhile(pollMs: number, predicate: () => boolean | Thenable<boolean>, timeout: number = 0, timeoutErrorMessage: string = "Timed out"): Promise<void> {
     return new Promise((resolve, reject): void => {
         const start = Date.now();
         const handler = setInterval(

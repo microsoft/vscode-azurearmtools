@@ -72,7 +72,10 @@ class ExtensionVariables {
     public get languageServerStateChanged(): vscode.Event<void> {
         return this._languageServerStateEmitter.event;
     }
+
     public languageServerStartupError: string | undefined;
+
+    public isLoadingSchema: boolean = false;
 
     public extensionStartupComplete: boolean | undefined;
     public extensionStartupError: string | undefined;

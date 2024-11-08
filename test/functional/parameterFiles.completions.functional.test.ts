@@ -8,7 +8,7 @@
 
 import * as assert from 'assert';
 import { commands, Selection } from 'vscode';
-import { delay } from '../support/delay';
+import { delay } from '../../extension.bundle';
 import { IDeploymentParametersFile, IDeploymentTemplate } from "../support/diagnostics";
 import { getCompletionItemResolutionPromise, getCompletionItemsPromise, getDocumentChangedPromise } from '../support/getEventPromise';
 import { mapParameterFile } from '../support/mapParameterFile';
