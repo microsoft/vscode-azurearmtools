@@ -18,7 +18,7 @@ import { assert } from '../fixed_assert';
 import { assertNever } from '../util/assertNever';
 import { delay } from '../util/delay';
 import { delayWhile } from '../util/delayWhile';
-import { doInBackground } from "../util/doInBackground";
+import { runInBackground } from "../util/runInBackground";
 import { msToSeconds } from "../util/time";
 import { WrappedErrorHandler } from './WrappedErrorHandler';
 
@@ -451,7 +451,7 @@ function showLoadingSchemasProgress(): void {
     if (!isShowingLoadingSchemasProgress) {
         isShowingLoadingSchemasProgress = true;
 
-        doInBackground(async () => {
+        runInBackground(async () => {
             var start = Date.now();
 
             // Wait a bit to see if we can avoid showing the progress bar if the schemas load quickly

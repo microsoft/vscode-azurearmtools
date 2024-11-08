@@ -7,7 +7,7 @@
 
 import { parseError } from "@microsoft/vscode-azext-utils";
 
-export function doInBackground(action: () => void | Promise<void>): void {
+export function runInBackground(action: () => void | Promise<void>): void {
     setTimeout(
         async () => {
             try {
