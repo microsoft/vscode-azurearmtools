@@ -626,7 +626,7 @@
         "@types/webpack": "^5.28.5",
         "@vscode/test-cli": "0.0.10",
         "@vscode/test-electron": "^2.4.1",
-        "@microsoft/vscode-azext-dev": "^2.0.6",
+        "@microsoft/vscode-azext-dev": "^2.1.0",
         "chokidar": "4.0.1",
         "crypto": "^1.0.1",
         "glob": "^7.2.3",
@@ -647,7 +647,7 @@
         "webpack-cli": "^5.1.4"
     },
     "dependencies": {
-        "@microsoft/vscode-azext-utils": "^2.0.0",
+        "@microsoft/vscode-azext-utils": "^2.5.11",
         "fs-extra": "^11.2.0",
         "moment": "^2.30.1",
         "strip-json-comments": "^3.1.1",
