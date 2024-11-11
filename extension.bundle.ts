@@ -107,6 +107,7 @@ export * from "./src/util/nonNull";
 export * from "./src/util/NormalizedMap";
 export * from "./src/util/normalizedPaths";
 export * from "./src/util/readUtf8FileWithBom";
+export { runInBackground } from "./src/util/runInBackground";
 export * from "./src/util/sorting";
 export * as strings from "./src/util/strings";
 export * from './src/util/time';
