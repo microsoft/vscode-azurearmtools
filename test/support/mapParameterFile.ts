@@ -3,8 +3,7 @@
 // ----------------------------------------------------------------------------
 
 import { Uri } from "vscode";
-import { ext } from "../../extension.bundle";
-import { delay } from "./delay";
+import { delay, ext } from "../../extension.bundle";
 
 /**
  * Maps a parameter file to a template file, then waits for the language server to pick up the change

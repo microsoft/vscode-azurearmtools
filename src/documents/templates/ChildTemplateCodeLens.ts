@@ -243,7 +243,7 @@ function getLoadStateFromLanguageServerStatus(): string | undefined {
             return "starting up...";
         case LanguageServerState.Stopped:
             return "language server stopped";
-        case LanguageServerState.LoadingSchemas:
+        case LanguageServerState.LoadingInitialSchemas:
             return "loading schemas...";
         default:
             assertNever(ext.languageServerState);

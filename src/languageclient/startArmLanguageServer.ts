@@ -10,14 +10,16 @@ import * as path from 'path';
 import { CancellationToken, CompletionContext, CompletionItem, CompletionList, Diagnostic, Event, EventEmitter, Position, ProgressLocation, TextDocument, Uri, window, workspace } from 'vscode';
 import { LanguageClient, LanguageClientOptions, RevealOutputChannelOn, ServerOptions } from 'vscode-languageclient/node';
 import { armTemplateLanguageId, backendValidationDiagnosticsSource, configKeys, configPrefix, downloadDotnetVersion, isRunningTests, languageFriendlyName, languageServerFolderName, languageServerName, notifications } from '../../common';
-import { delay } from '../../test/support/delay';
 import { acquireSharedDotnetInstallation } from '../acquisition/acquireSharedDotnetInstallation';
 import { convertDiagnosticUrisToLinkedTemplateSchema, INotifyTemplateGraphArgs, IRequestOpenLinkedFileArgs, onRequestOpenLinkedFile } from '../documents/templates/linkedTemplates/linkedTemplates';
 import { templateDocumentSelector } from '../documents/templates/supported';
 import { ext } from '../extensionVariables';
 import { assert } from '../fixed_assert';
 import { assertNever } from '../util/assertNever';
-import { delayWhileSync } from '../util/delayWhileSync';
+import { delay } from '../util/delay';
+import { delayWhile } from '../util/delayWhile';
+import { runInBackground } from "../util/runInBackground";
+import { msToSeconds } from "../util/time";
 import { WrappedErrorHandler } from './WrappedErrorHandler';
 
 const languageServerDllName = 'Microsoft.ArmLanguageServer.dll';
@@ -34,7 +36,7 @@ export enum LanguageServerState {
     Failed, // 2
     Running, // 3
     Stopped, // 4
-    LoadingSchemas, // 5
+    LoadingInitialSchemas, // 5
 }
 
 /**
@@ -68,7 +70,7 @@ export function startArmLanguageServerInBackground(): void {
     switch (ext.languageServerState) {
         case LanguageServerState.Running:
         case LanguageServerState.Starting:
-        case LanguageServerState.LoadingSchemas:
+        case LanguageServerState.LoadingInitialSchemas:
             // Nothing to do
             return;
 
@@ -106,7 +108,7 @@ export function startArmLanguageServerInBackground(): void {
 
                         ext.languageServerState = haveFirstSchemasFinishedLoading ?
                             LanguageServerState.Running :
-                            LanguageServerState.LoadingSchemas;
+                            LanguageServerState.LoadingInitialSchemas;
                     } catch (error) {
                         ext.languageServerStartupError = `${parseError(error).message}: ${error instanceof Error ? error.stack : 'no stack'}`;
                         ext.languageServerState = LanguageServerState.Failed;
@@ -421,6 +423,8 @@ function onNotifyTemplateGraph(args: INotifyTemplateGraphArgs): void {
 }
 
 function onSchemaValidationNotication(args: notifications.ISchemaValidationNotificationArgs): void {
+    console.warn(args.completed ? `Finished loading schemas for ${args.uri}` : `Loading schemas for ${args.uri}`);
+
     if (!haveFirstSchemasStartedLoading) {
         haveFirstSchemasStartedLoading = true;
     }
@@ -428,16 +432,17 @@ function onSchemaValidationNotication(args: notifications.ISchemaValidationNotif
         haveFirstSchemasFinishedLoading = true;
     }
 
-    const isLoadingSchemas = haveFirstSchemasStartedLoading && !haveFirstSchemasFinishedLoading;
+    const isLoadingInitialSchemas = haveFirstSchemasStartedLoading && !haveFirstSchemasFinishedLoading;
     const newState =
-        (isLoadingSchemas && ext.languageServerState === LanguageServerState.Running)
-            ? LanguageServerState.LoadingSchemas
-            : (!isLoadingSchemas && ext.languageServerState === LanguageServerState.LoadingSchemas)
+        (isLoadingInitialSchemas && ext.languageServerState === LanguageServerState.Running)
+            ? LanguageServerState.LoadingInitialSchemas
+            : (!isLoadingInitialSchemas && ext.languageServerState === LanguageServerState.LoadingInitialSchemas)
                 ? LanguageServerState.Running
                 : ext.languageServerState;
     ext.languageServerState = newState;
 
-    if (newState === LanguageServerState.LoadingSchemas) {
+    ext.isLoadingSchema = !args.completed;
+    if (ext.isLoadingSchema) {
         showLoadingSchemasProgress();
     }
 }
@@ -445,14 +450,37 @@ function onSchemaValidationNotication(args: notifications.ISchemaValidationNotif
 function showLoadingSchemasProgress(): void {
     if (!isShowingLoadingSchemasProgress) {
         isShowingLoadingSchemasProgress = true;
-        window.withProgress(
-            {
-                location: ProgressLocation.Notification,
-                title: `Loading ARM schemas`
-            },
-            async () => delayWhileSync(500, () => ext.languageServerState === LanguageServerState.LoadingSchemas)
-        ).then(() => {
-            isShowingLoadingSchemasProgress = false;
+
+        runInBackground(async () => {
+            var start = Date.now();
+
+            // Wait a bit to see if we can avoid showing the progress bar if the schemas load quickly
+            //   (we get schema loading notifications on every file open, generally quick after first load of that template schema)
+            await delay(2000);
+
+            if (ext.isLoadingSchema) {
+                callWithTelemetryAndErrorHandling("loadingSchemas", async (context: IActionContext) => {
+                    try {
+                        await window.withProgress(
+                            {
+                                location: ProgressLocation.Notification,
+                                title: `Loading ARM schemas`
+                            },
+                            async (progress) => delayWhile(1000, () => {
+                                const dots = Math.floor(msToSeconds((Date.now() - start))) / 2;
+                                progress.report({ message: ". ".repeat(dots) });
+                                return ext.isLoadingSchema;
+                            })
+                        );
+                    } finally {
+                        isShowingLoadingSchemasProgress = false;
+                        const durationSeconds = Math.round(msToSeconds(Date.now() - start));
+                        context.telemetry.properties.seconds = durationSeconds.toString();
+                    }
+                });
+            } else {
+                isShowingLoadingSchemasProgress = false;
+            }
         });
     }
 }
@@ -479,7 +507,7 @@ export async function waitForLanguageServerAvailable(): Promise<void> {
         case LanguageServerState.Running:
             return;
 
-        case LanguageServerState.LoadingSchemas:
+        case LanguageServerState.LoadingInitialSchemas:
         case LanguageServerState.Starting:
             break;
 
@@ -498,7 +526,7 @@ export async function waitForLanguageServerAvailable(): Promise<void> {
 
             case LanguageServerState.NotStarted:
             case LanguageServerState.Starting:
-            case LanguageServerState.LoadingSchemas:
+            case LanguageServerState.LoadingInitialSchemas:
                 await delay(100);
                 break;
             case LanguageServerState.Running:
