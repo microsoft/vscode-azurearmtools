@@ -18,7 +18,6 @@ export async function publishVsCodeLogs(extensionid: string | undefined): Promis
 
     if (fse.pathExistsSync(sourcePath)) {
         await fse.copy(sourcePath, destFolderPath, {
-            recursive: true,
             preserveTimestamps: true
         });
     } else {
