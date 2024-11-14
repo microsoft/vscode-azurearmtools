@@ -6,7 +6,7 @@
     "publisher": "msazurermtools",
     "config": {
         "$comment.ARM_LANGUAGE_SERVER_NUGET_VERSION": "E.g., 3.0.0-preview.24163.1, or lease blank to pick up the latest",
-        "ARM_LANGUAGE_SERVER_NUGET_VERSION": "3.0.0-preview.24224.1"
+        "ARM_LANGUAGE_SERVER_NUGET_VERSION": ""
     },
     "categories": [
         "Azure",
