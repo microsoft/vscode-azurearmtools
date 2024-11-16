@@ -9,7 +9,7 @@
 		{
 			"name": "${1:serviceBusNamespace1}/${2:serviceBusQueue1}",
 			"type": "Microsoft.ServiceBus/namespaces/queues",
-			"apiVersion": "2021-11-01",
+			"apiVersion": "2024-01-01",
 			"dependsOn": [
 				"[resourceId('Microsoft.ServiceBus/namespaces', '${2:serviceBusQueue1}')]"
 			],

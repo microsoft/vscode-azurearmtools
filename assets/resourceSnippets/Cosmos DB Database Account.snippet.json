@@ -9,7 +9,7 @@
 		{
 			"name": "${1:cosmosDbAccount1}",
 			"type": "Microsoft.DocumentDB/databaseAccounts",
-			"apiVersion": "2023-11-15",
+			"apiVersion": "2024-08-15",
 			"location": "[resourceGroup().location]",
 			"tags": {
 			},

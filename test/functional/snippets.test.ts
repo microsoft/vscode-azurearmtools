@@ -7,8 +7,8 @@
 
 // WARNING: At the breakpoint, the extension will be in an inactivate state (i.e., if you make changes in the editor, diagnostics,
 //   formatting, etc. will not be updated until you F5 again)
-const DEBUG_BREAK_AFTER_INSERTING_SNIPPET = false;
-const LOG_DOC_TEXT_BEFORE_AND_AFTER_SNIPPET_INSERTION = false;
+const DEBUG_BREAK_AFTER_INSERTING_SNIPPET = true;
+const LOG_DOC_TEXT_BEFORE_AND_AFTER_SNIPPET_INSERTION = true;
 
 import * as assert from 'assert';
 import * as fse from 'fs-extra';
