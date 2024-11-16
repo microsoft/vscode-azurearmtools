@@ -3,7 +3,7 @@
 		{
 			"name": "loadBalancerInternal1",
 			"type": "Microsoft.Network/loadBalancers",
-			"apiVersion": "2023-11-01",
+			"apiVersion": "2024-03-01",
 			"location": "[resourceGroup().location]",
 			"dependsOn": [
 				"[resourceId('Microsoft.Network/virtualNetworks', 'virtualNetwork1')]"

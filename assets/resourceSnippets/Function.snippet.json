@@ -9,7 +9,7 @@
 		{
 			"name": "${1:functionName}",
 			"type": "Microsoft.Web/sites",
-			"apiVersion": "2023-01-01",
+			"apiVersion": "2024-04-01",
 			"location": "[resourceGroup().location]",
 			"kind": "functionapp",
 			"dependsOn": [

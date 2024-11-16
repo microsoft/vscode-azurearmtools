@@ -3,7 +3,7 @@
 		{
 			"name": "aksCluster1",
 			"type": "Microsoft.ContainerService/managedClusters",
-			"apiVersion": "2024-02-01",
+			"apiVersion": "2024-08-01",
 			"location": "[resourceGroup().location]",
 			"properties": {
 				"kubernetesVersion": "1.15.7",
