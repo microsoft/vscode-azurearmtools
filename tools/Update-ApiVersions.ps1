@@ -147,7 +147,7 @@ function UpdateApiVersions {
         $content = Get-Content $FilePath -Raw
         $versions = FindUsedApiVersionsInFile $FilePath
 
-        $versions | % {
+        $versions | ForEach-Object {
             $type, $apiVersion = $_ -split "@"
             $newApiVersion = GetApiVersion $type
             if ($newApiVersion) {

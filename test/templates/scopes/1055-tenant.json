@@ -50,7 +50,7 @@
         {
             "name": "string",
             "type": "Microsoft.Management/managementGroups",
-            "apiVersion": "2020-05-01",
+            "apiVersion": "2023-04-01",
             "properties": {
                 "displayName": "string",
                 "details": {

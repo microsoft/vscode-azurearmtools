@@ -25,7 +25,7 @@
     {
       "name": "[variables('roleAssignmentName')]",
       "type": "Microsoft.Authorization/roleAssignments",
-      "apiVersion": "2017-09-01",
+      "apiVersion": "2022-04-01",
       "properties": {
         "roleDefinitionId": "[tenantResourceId('Microsoft.Authorization/roleDefinitions', parameters('roleDefinitionId'))]",
         "principalId": "[parameters('principalId')]",
