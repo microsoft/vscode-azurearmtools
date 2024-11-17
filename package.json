@@ -612,7 +612,7 @@
     },
     "$devDependencies.comment": "@types/estree is to fix eslint issue, see https://stackoverflow.com/questions/67806963/types-eslint-error-chainexpression-and-importexpression-members-of-estree-not#:~:text=Solution%20to%20this%20problem%20is%3A%20npm%20install%20--save-dev,again%3A%20npm%20install%20Errors%20should%20be%20gone%20now.",
     "devDependencies": {
-        "@types/decompress": "^4.2.3",
+        "@types/decompress": "^4.2.7",
         "@types/estree": "^1.0.6",
         "@types/fs-extra": "^11.0.4",
         "@types/gulp": "^4.0.17",
