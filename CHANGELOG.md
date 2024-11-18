@@ -12,7 +12,7 @@ All notable changes to the "vscode-azurearmtools" extension will be documented i
 
 - Updated to dotnet 8.0
 - Picked up newest schemas
-- Update apiVersions in snippets
+- Updated apiVersions in snippets
 
 ## Version 0.15.13 (Oct 31, 2024)
 
