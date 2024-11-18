@@ -9,7 +9,7 @@
 		{
 			"name": "${1:serviceBusNamespace1}",
 			"type": "Microsoft.ServiceBus/namespaces",
-			"apiVersion": "2021-11-01",
+			"apiVersion": "2024-01-01",
 			"location": /*${2|[parameters('location')],[resourceGroup().location]|}*/ "location",
 			"sku": {
 				"name": "Standard"

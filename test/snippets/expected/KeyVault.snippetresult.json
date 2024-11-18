@@ -38,7 +38,7 @@
 				{
 					"type": "secrets",
 					"name": "keyVaultSecret1",
-					"apiVersion": "2016-10-01",
+					"apiVersion": "2023-07-01",
 					"dependsOn": [
 						"[resourceId('Microsoft.KeyVault/vaults', 'keyVault1')]"
 					],

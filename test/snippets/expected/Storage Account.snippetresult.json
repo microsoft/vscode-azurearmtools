@@ -3,7 +3,7 @@
 		{
 			"name": "storageaccount1",
 			"type": "Microsoft.Storage/storageAccounts",
-			"apiVersion": "2023-04-01",
+			"apiVersion": "2023-05-01",
 			"tags": {
 				"displayName": "storageaccount1"
 			},

@@ -2,7 +2,7 @@
 	"resources": [
 		{
 			"type": "Microsoft.Storage/storageAccounts",
-			"apiVersion": "2023-04-01",
+			"apiVersion": "2023-05-01",
 			"name": "[variables('storageAccountName')]",
 			"location": "[parameters('location')]",
 			"sku": {
@@ -12,7 +12,7 @@
 		},
 		{
 			"type": "Microsoft.Network/publicIPAddresses",
-			"apiVersion": "2023-11-01",
+			"apiVersion": "2024-03-01",
 			"name": "[parameters('publicIpName')]",
 			"location": "[parameters('location')]",
 			"sku": {
@@ -27,7 +27,7 @@
 		},
 		{
 			"type": "Microsoft.Network/networkSecurityGroups",
-			"apiVersion": "2023-11-01",
+			"apiVersion": "2024-03-01",
 			"name": "[variables('networkSecurityGroupName')]",
 			"location": "[parameters('location')]",
 			"properties": {
@@ -50,7 +50,7 @@
 		},
 		{
 			"type": "Microsoft.Network/virtualNetworks",
-			"apiVersion": "2023-11-01",
+			"apiVersion": "2024-03-01",
 			"name": "[variables('virtualNetworkName')]",
 			"location": "[parameters('location')]",
 			"properties": {
@@ -77,7 +77,7 @@
 		},
 		{
 			"type": "Microsoft.Network/networkInterfaces",
-			"apiVersion": "2023-11-01",
+			"apiVersion": "2024-03-01",
 			"name": "[variables('nicName')]",
 			"location": "[parameters('location')]",
 			"properties": {
@@ -103,7 +103,7 @@
 		},
 		{
 			"type": "Microsoft.Compute/virtualMachines",
-			"apiVersion": "2023-03-01",
+			"apiVersion": "2024-07-01",
 			"name": "[parameters('vmName')]",
 			"location": "[parameters('location')]",
 			"properties": {
@@ -159,7 +159,7 @@
 		{
 			"condition": "[and(equals(parameters('securityType'), 'TrustedLaunch'), and(equals(variables('securityProfileJson').uefiSettings.secureBootEnabled, true()), equals(variables('securityProfileJson').uefiSettings.vTpmEnabled, true())))]",
 			"type": "Microsoft.Compute/virtualMachines/extensions",
-			"apiVersion": "2023-03-01",
+			"apiVersion": "2024-07-01",
 			"name": "[format('{0}/{1}', parameters('vmName'), variables('extensionName'))]",
 			"location": "[parameters('location')]",
 			"properties": {

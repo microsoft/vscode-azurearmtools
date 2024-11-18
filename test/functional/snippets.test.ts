@@ -225,7 +225,6 @@ const overrideExpectedDiagnostics: { [name: string]: (string | RegExp)[] } = {
     "Automation Schedule": [
         // Expected (by design)
         "Value must be a valid ISO 8601 datetime",
-        "Value must be one of the following types: object"
     ],
     "Cosmos DB Mongo Database": [
         // TODO: fix snippet
