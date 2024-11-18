@@ -618,7 +618,7 @@
         "@types/gulp": "^4.0.17",
         "@types/mocha": "^10.0.9",
         "@types/node": "^22.9.0",
-        "@types/recursive-readdir": "^2.2.1",
+        "@types/recursive-readdir": "^2.2.4",
         "@types/rimraf": "2.0.2",
         "@types/shelljs": "0.8.15",
         "@types/vscode": "^1.75.0",
