@@ -280,6 +280,13 @@
             "maximumArguments": 0
         },
         {
+            "name": "filter",
+            "expectedUsage": "filter(inputArray, lambda)",
+            "description": "Filters an array with a custom filtering function.",
+            "minimumArguments": 2,
+            "maximumArguments": 2
+        },
+        {
             "name": "first",
             "expectedUsage": "first(arg1)",
             "description": "Returns the first element of the array, or first character of the string.",
@@ -311,6 +318,13 @@
             "name": "greaterOrEquals",
             "expectedUsage": "greaterOrEquals(arg1, arg2)",
             "description": "Checks whether the first value is greater than or equal to the second value.",
+            "minimumArguments": 2,
+            "maximumArguments": 2
+        },
+        {
+            "name": "groupBy",
+            "expectedUsage": "groupBy(inputArray, keySelector)",
+            "description": "Groups the elements of an array based on a specified key selector function.",
             "minimumArguments": 2,
             "maximumArguments": 2
         },
@@ -369,6 +383,13 @@
             "description": "Returns a JSON object from the specified string, or an empty object when null is specified ",
             "minimumArguments": 1,
             "maximumArguments": 1
+        },
+        {
+            "name": "lambda",
+            "expectedUsage": "lambda(<lambda variable>, [<lambda variable>, ...], <expression>)",
+            "description": "Defines a lambda expression that can be passed as an argument to functions like filter, groupBy, map, mapValues, reduce, sort, and toObject. See https://learn.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions-lambda for information on using lambda functions.",
+            "minimumArguments": 2,
+            "maximumArguments": null
         },
         {
             "name": "last",
@@ -657,6 +678,20 @@
             ]
         },
         {
+            "name": "map",
+            "expectedUsage": "map(inputArray, transformFunction)",
+            "description": "Projects each element of an array into a new form based on a transformation function. See https://learn.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions-lambda for information on using lambda functions.",
+            "minimumArguments": 2,
+            "maximumArguments": 2
+        },
+        {
+            "name": "mapValues",
+            "expectedUsage": "mapValues(object, transformFunction)",
+            "description": "Projects each value of an object into a new form based on a transformation function. See https://learn.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions-lambda for information on using lambda functions.",
+            "minimumArguments": 2,
+            "maximumArguments": 2
+        },
+        {
             "name": "max",
             "expectedUsage": "max(arg1, ...)",
             "description": "Returns the maximum value from an array of integers or a comma-separated list of integers.",
@@ -748,6 +783,13 @@
             "maximumArguments": 2
         },
         {
+            "name": "reduce",
+            "expectedUsage": "reduce(inputArray, initialValue, accumulatorFunction)",
+            "description": "Applies a function against an accumulator and each element in the array to reduce it to a single value. See https://learn.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions-lambda for information on using lambda functions.",
+            "minimumArguments": 3,
+            "maximumArguments": 3
+        },
+        {
             "name": "reference",
             "expectedUsage": "reference(resourceName\/resourceIdentifier, [apiVersion], ['Full'])",
             "description": "Enables an expression to derive its value from another resource's runtime state.",
@@ -799,6 +841,13 @@
             "name": "skip",
             "expectedUsage": "skip(originalValue, numberToSkip)",
             "description": "Returns an array or string with all of the elements or characters after the specified number in the array or string.",
+            "minimumArguments": 2,
+            "maximumArguments": 2
+        },
+        {
+            "name": "sort",
+            "expectedUsage": "sort(inputArray, comparer)",
+            "description": "Sorts an array with a custom sort function. See https://learn.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions-lambda for information on using lambda functions.",
             "minimumArguments": 2,
             "maximumArguments": 2
         },
@@ -912,6 +961,13 @@
             "description": "Converts the specified string to lower case.",
             "minimumArguments": 1,
             "maximumArguments": 1
+        },
+        {
+            "name": "toObject",
+            "expectedUsage": "toObject(inputArray, lambda function, [lambda function])",
+            "description": "Converts an array to an object with a custom key function and optional custom value function. See https://learn.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions-object#items about converting an object to an array. See https://learn.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions-lambda for information on using lambda functions.",
+            "minimumArguments": 2,
+            "maximumArguments": 3
         },
         {
             "name": "toUpper",
