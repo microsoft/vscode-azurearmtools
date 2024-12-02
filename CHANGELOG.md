@@ -7,12 +7,17 @@ All notable changes to the "vscode-azurearmtools" extension will be documented i
 ### Fixed
 
 - Can't update to latest online schemas (have errors) [#1733](https://github.com/microsoft/vscode-azurearmtools/issues/1733)
+- Fix loading schemas progress [#1789](https://github.com/microsoft/vscode-azurearmtools/issues/1789)
+- Add missing lambda functions [#1801](https://github.com/microsoft/vscode-azurearmtools/issues/1801)
 
 ### Changed
 
+- Updated apiVersion in snippets
 - Updated to dotnet 8.0
 - Picked up newest schemas
 - Updated apiVersions in snippets
+- Update to latest npm packages
+- Updated required VS Code version to 1.75
 
 ## Version 0.15.13 (Oct 31, 2024)
 
