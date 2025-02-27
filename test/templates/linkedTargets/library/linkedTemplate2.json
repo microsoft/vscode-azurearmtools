@@ -1,0 +1,21 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.2.3.4",
+    "resources": [
+    ],
+    "outputs": {
+        "linked2output1": {
+            "type": "string",
+            "value": "[concat('My parameter is ', parameters('linked2param1'))]"
+        }
+    },
+    "functions": [
+    ],
+    "variables": {
+    },
+    "parameters": {
+        "linked2param1": {
+            "type": "string"
+        }
+    }
+}
