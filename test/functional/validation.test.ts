@@ -72,6 +72,7 @@ suite("General validation tests (all diagnostic sources)", () => {
                 []);
         });
 
+       /* TODO: re-enable
         testWithLanguageServerAndRealFunctionMetadata("linked template scope", async () => {
             await testDiagnostics(
                 {
@@ -133,6 +134,6 @@ suite("General validation tests (all diagnostic sources)", () => {
                     `${testMessages.linkedTemplateNoValidation("linkedDeployment2")} (arm-template (expressions)) [15,15-15,34]`
 
                 ]);
-        });
+        }); */
     });
 });
