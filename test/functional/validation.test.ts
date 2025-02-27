@@ -72,7 +72,7 @@ suite("General validation tests (all diagnostic sources)", () => {
                 []);
         });
 
-       /* TODO: re-enable
+       /*  TODO: Re-enable once https://github.com/microsoft/vscode-azurearmtools/pull/1817 is checked in
         testWithLanguageServerAndRealFunctionMetadata("linked template scope", async () => {
             await testDiagnostics(
                 {
