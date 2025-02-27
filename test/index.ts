@@ -50,7 +50,8 @@ function addEnvVarsToMochaOptions(options: Mocha.MochaOptions): void {
                 value = parseInt(value);
             }
 
-            if (envVar.toLowerCase() === 'mocha_grep' && typeof value === 'string') {
+            if (envVar.toLowerCase() === 'mocha_grep') {
+                value = typeof value === "string" ? value.trim().replace(/^"|"$/g, '') : String(value); // handle if the pattern is a string but looks like a number e.g. a testcase with a bug ID as the pattern
                 if (value !== '' && value[0] !== '/') {
                     value = `/${value}/i`;
                 }
