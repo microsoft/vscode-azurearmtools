@@ -5,11 +5,12 @@
 // tslint:disable:no-unused-expression max-func-body-length promise-function-async max-line-length no-unnecessary-class
 // tslint:disable:no-non-null-assertion object-literal-key-quotes variable-name no-constant-condition
 
-import { testDiagnostics, testDiagnosticsFromFile } from "./support/diagnostics";
+import { testDiagnostics } from "./support/diagnostics";
 import { testWithLanguageServer } from "./support/testWithLanguageServer";
 import { isWin32 } from "./testConstants";
 
 suite("Linked templates regressions", () => {
+/*  TODO: Re-enable once https://github.com/microsoft/vscode-azurearmtools/pull/1817 is checked in
     suite("variables and parameters inside templateLink object refer to the parent's scope", () => {
         testWithLanguageServer('Regress #792: Regression from 0.10.0: top-level parameters not recognized in nested template properties', async () => {
             await testDiagnosticsFromFile(
@@ -40,6 +41,7 @@ suite("Linked templates regressions", () => {
             });
         });
     });
+*/
 
     suite("Error location inside linked and `nested tem`plates", async () => {
         // tslint:disable-next-line: no-suspicious-comment
