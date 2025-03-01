@@ -630,7 +630,7 @@
         "chokidar": "4.0.1",
         "crypto": "^1.0.1",
         "glob": "^7.2.3",
-        "glob-promise": "^4.2.2",
+        "glob-promise": "^6.0.7",
         "gulp": "^5.0.0",
         "mocha": "^10.8.2",
         "mocha-junit-reporter": "^2.2.1",
