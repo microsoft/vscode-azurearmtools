@@ -34,3 +34,14 @@ steps:
       cat logs/testlog.txt
     displayName: "Dump test logs"
     condition: succeededOrFailed()
+
+  # Delete the .vscode-test folder if it exists to avoid component management picking up issues from vscode sources
+  - script: |
+      if [ -d .vscode-test ]; then
+        rm -rf .vscode-test
+        echo "Deleted .vscode-test folder."
+      else
+        echo ".vscode-test folder does not exist."
+      fi
+    displayName: "Cleanup .vscode-test folder"
+    condition: succeeded()
