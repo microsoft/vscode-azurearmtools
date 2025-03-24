@@ -28,7 +28,7 @@ export function httpGet(url: string): Promise<string> {
                     let encoding: BufferEncoding | undefined;
 
                     response.on("data", (dataChunk: string | Buffer) => {
-                        const buffer: Buffer = dataChunk instanceof Buffer ? dataChunk : new Buffer(dataChunk);
+                        const buffer: Buffer = dataChunk instanceof Buffer ? dataChunk : Buffer.from(dataChunk);
                         let byteOrderMarkLength: number = 0;
                         if (!encoding) {
                             if (dataChunk[0] === 0xFF &&
