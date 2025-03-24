@@ -991,6 +991,13 @@
             "maximumArguments": 0
         },
         {
+            "name": "tryGet",
+            "expectedUsage": "tryGet(container, itemToGet)",
+            "description": "Checks if an array, object, or string contains a value, key, or substring. Returns and retrieves it if found; otherwise, returns null.",
+            "minimumArguments": 2,
+            "maximumArguments": 2
+        },
+        {
             "name": "union",
             "expectedUsage": "union(arg1, arg2, arg3, ...)",
             "description": "Returns a single array or object with all elements from the parameters. Duplicate values or keys are only included once.",
