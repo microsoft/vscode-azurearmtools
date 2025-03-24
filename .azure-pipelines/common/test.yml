@@ -43,5 +43,5 @@ steps:
       else
         echo ".vscode-test folder does not exist."
       fi
-    displayName: "Cleanup .vscode-test folder"
+    displayName: "Clean up .vscode-test folder"
     condition: succeeded()
