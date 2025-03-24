@@ -637,7 +637,7 @@
         "mocha-multi-reporters": "^1.5.1",
         "nuget": "^2.0.2",
         "recursive-readdir": "^2.2.3",
-        "rimraf": "3.0.2",
+        "rimraf": "6.0.1",
         "shelljs": "^0.8.5",
         "source-map-support": "^0.5.21",
         "ts-node": "^10.9.2",
