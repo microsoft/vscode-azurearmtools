@@ -37,11 +37,11 @@ steps:
 
   # Delete the .vscode-test folder if it exists to avoid component management picking up issues from vscode sources
   - script: |
-      if [ -d .vscode-test ]; then
-        rm -rf .vscode-test
-        echo "Deleted .vscode-test folder."
-      else
-        echo ".vscode-test folder does not exist."
-      fi
+      if (Test-Path -Path ".vscode-test") {
+          Remove-Item -Path ".vscode-test" -Recurse -Force
+          Write-Output "Deleted .vscode-test folder."
+      } else {
+          Write-Output ".vscode-test folder does not exist."
+      }
     displayName: "Clean up .vscode-test folder"
     condition: succeeded()
