@@ -8,6 +8,8 @@ All notable changes to the "vscode-azurearmtools" extension will be documented i
 
 - Picked up newest schemas
 - Microsoft.Insights/alertrules removed (see https://learn.microsoft.com/en-us/azure/azure-monitor/alerts/alerts-log-api-switch)
+- Add "tryGet" function (thanks Daniel M @danmacode!) [#1748](https://github.com/microsoft/vscode-azurearmtools/issues/1748)
+- Add missing "lambdaVariables" function [#1594](https://github.com/microsoft/vscode-azurearmtools/issues/1594)
 
 ## Version 0.15.14
 
