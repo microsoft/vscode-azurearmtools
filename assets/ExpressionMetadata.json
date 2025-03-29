@@ -392,6 +392,13 @@
             "maximumArguments": null
         },
         {
+            "name": "lambdaVariables",
+            "expectedUsage": "lambdaVariables(variableName)",
+            "description": "Accesses the value of a variable defined in a lambda expression during processing. This is used to refer to items in collections or additional context such as indices.",
+            "minimumArguments": 1,
+            "maximumArguments": 1
+        },
+        {
             "name": "last",
             "expectedUsage": "last(arg1)",
             "description": "Returns the last element of the array, or last character of the string.",
