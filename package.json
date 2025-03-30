@@ -647,7 +647,7 @@
         "webpack-cli": "^5.1.4"
     },
     "dependencies": {
-        "@microsoft/vscode-azext-utils": "^2.5.11",
+        "@microsoft/vscode-azext-utils": "^2.6.6",
         "fs-extra": "^11.2.0",
         "moment": "^2.30.1",
         "strip-json-comments": "^3.1.1",
