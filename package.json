@@ -643,7 +643,7 @@
         "ts-node": "^10.9.2",
         "typescript": "^5.8.2",
         "vsce": "^1.87.0",
-        "webpack": "^5.98.0",
+        "webpack": "^5.99.6",
         "webpack-cli": "^5.1.4"
     },
     "dependencies": {
