@@ -31,6 +31,18 @@ extends:
       apiScan:
         break: false
         severity: error
+      tsa:
+        enabled: true
+        config:
+          repositoryName: 'vscode-azurearmtools'
+          codebaseName: 'vscode-azurearmtools'
+          instanceUrl: 'https://devdiv.visualstudio.com/'
+          projectName: 'DEVDIV'
+          iterationPath: 'DevDiv\\Future Backlog'
+          areaPath: 'DevDiv\VS Azure Tools\Azure RM'
+          notificationAliases: ['aajohn@microsoft.com']
+          serviceTreeID: 'ab4d58de-beb3-4714-866c-1b46a48ea002'
+          allTools: true
     pool:
       name: AzurePipelines-EO
       image: AzurePipelinesWindows2022compliantGPT
