@@ -41,3 +41,4 @@ pipelines:
           lastModifiedDate: 2025-04-29
         spotbugs:
           lastModifiedDate: 2025-04-29
+    usedNonDefaultBranch: true
