@@ -626,7 +626,7 @@
         "@types/webpack": "^5.28.5",
         "@vscode/test-cli": "0.0.10",
         "@vscode/test-electron": "^2.4.1",
-        "@microsoft/vscode-azext-dev": "^2.1.0",
+        "@microsoft/vscode-azext-dev": "^2.1.2",
         "chokidar": "4.0.1",
         "crypto": "^1.0.1",
         "glob": "^7.2.3",
